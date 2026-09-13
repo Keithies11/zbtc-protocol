@@ -403,7 +403,8 @@
       "function mine() external returns (uint256)"
     ];
 
-    let readProvider = new ethers.JsonRpcProvider(BASE_RPCS[0]);
+    let rpcIndex = 0;
+    let readProvider = new ethers.JsonRpcProvider(BASE_RPCS[rpcIndex]);
     let readContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
     let userSigner = null;
     let userContract = null;
@@ -411,15 +412,30 @@
     let userHasGas = false;
     let cooldownTimer = null;
 
+    async function callWithRpcFallback(fn) {
+      for (let attempts = 0; attempts < BASE_RPCS.length; attempts++) {
+        try {
+          return await fn(readContract);
+        } catch (err) {
+          rpcIndex = (rpcIndex + 1) % BASE_RPCS.length;
+          readProvider = new ethers.JsonRpcProvider(BASE_RPCS[rpcIndex]);
+          readContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
+          if (attempts === BASE_RPCS.length - 1) throw err;
+        }
+      }
+    }
+
     async function updateStats() {
       try {
-        const [totalSupply, reward, epoch, mineCount, remainingPool] = await Promise.all([
-          readContract.totalSupply(),
-          readContract.currentReward(),
-          readContract.currentEpoch(),
-          readContract.mineCount(),
-          readContract.remainingMineableSupply()
-        ]);
+        const [totalSupply, reward, epoch, mineCount, remainingPool] = await callWithRpcFallback((contract) =>
+          Promise.all([
+            contract.totalSupply(),
+            contract.currentReward(),
+            contract.currentEpoch(),
+            contract.mineCount(),
+            contract.remainingMineableSupply()
+          ])
+        );
 
         const supplyEth = parseFloat(ethers.formatEther(totalSupply));
         const rewardEth = ethers.formatEther(reward);
