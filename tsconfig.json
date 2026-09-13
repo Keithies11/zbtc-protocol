@@ -4,8 +4,10 @@
     "module": "node20",
     "target": "es2023",
     "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
     "outDir": "dist",
-    "types": ["node"],
-    "verbatimModuleSyntax": true
-  }
+    "types": ["node"]
+  },
+  "include": ["**/*.js", "**/*.ts"]
 }

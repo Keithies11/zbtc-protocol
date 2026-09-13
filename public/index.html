@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZBTC Miner Dashboard</title>
-  <meta name="base:app_id" content="6aa69f251b25d7f746e60398">
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -274,6 +273,7 @@
         </div>
       </div>
       <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <span style="color: #f87171; font-size: 0.78rem; font-weight: 800;">⚠️ Use only your own wallet + Base ETH</span>
         <div class="network-badge">
           <span class="network-dot"></span>
           Base Mainnet (8453)
@@ -303,17 +303,19 @@
     </div>
 
     <div class="card mining-card">
+      <p style="color: #f87171; font-weight: 800;">⚠️ EXPERIMENTAL LEARNING APP — Do not mine unless you understand Base transactions and gas risk.</p>
       <h2>Mine ZBTC On-Chain</h2>
       <p style="color: var(--text-dim); max-width: 500px;">
         Trigger proof-of-transaction mining. Every epoch (200,000 mines), block rewards halve automatically.
       </p>
+      <p style="color: #f87171; max-width: 600px; font-size: 0.86rem;">Learning only. You can lose real Base ETH to gas and ZBTC has no guaranteed value. Never use a wallet containing funds you cannot afford to lose.</p>
 
       <div class="reward-pill" id="minePill">
         +50.0 ZBTC Reward
       </div>
 
       <button id="mineBtn" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.15rem;" disabled>
-        ⛏️ Mine ZBTC
+        ⛏️ Mine ZBTC Block
       </button>
 
       <div id="cooldownMsg" class="cooldown-text">
@@ -321,6 +323,7 @@
       </div>
 
       <div id="statusMsg" class="status-msg"></div>
+      <div id="gasEstimate" style="color: var(--text-dim); font-size: 0.85rem;">Gas estimate unavailable until a wallet is connected.</div>
 
       <div style="width: 100%; margin-top: 1rem;">
         <div class="info-row">
@@ -331,6 +334,7 @@
           <div id="progressFill" class="progress-bar-fill"></div>
         </div>
       </div>
+      <p style="color: var(--text-dim); font-size: 0.78rem;">Network: Base Mainnet (Chain ID 8453) · Contract: <span style="font-family: monospace;">0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3</span></p>
     </div>
 
     <div class="grid-stats">
@@ -343,6 +347,28 @@
         <div id="userBalance" class="card-value highlight">0.00 ZBTC</div>
       </div>
       <div class="card" style="grid-column: 1 / -1; color: #fbbf24; font-size: 0.86rem;">Never remove your wallet account or lose its recovery phrase. Disconnecting only hides it from this site; mined ZBTC remains on-chain.</div>
+      <div class="card" style="grid-column: 1 / -1; color: #f87171; font-size: 0.86rem; font-weight: 700;">⚠️ Connect only a wallet you control. Never enter a seed phrase or private key. This wallet must hold Base ETH for mining gas.</div>
+    </div>
+
+    <div id="ownerPanel" class="card" style="display: none; border-color: rgba(247, 147, 26, 0.5); background: rgba(247, 147, 26, 0.05); margin-top: 1.5rem;">
+      <div style="font-weight: 800; color: #f7931a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+        ⚙️ Contract Owner Controls (<span id="ownerAddrLabel" style="font-family: monospace;"></span>)
+      </div>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">
+        As contract owner, you can adjust the on-chain mining cooldown for testing or production. Current Cooldown: <strong id="ownerCurrentCd" style="color: #fff;">--</strong>
+      </p>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+        <button type="button" id="set30SecBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #eab308; color: #000;">
+          ⚡ Set 30 Sec Cooldown
+        </button>
+        <button type="button" id="set1MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #f7931a; color: #000;">
+          ⚡ Set 1 Min Cooldown
+        </button>
+        <button type="button" id="set10MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #243447; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+          ⏰ Reset 10 Min Cooldown
+        </button>
+      </div>
+      <div id="ownerStatusMsg" style="margin-top: 0.75rem; font-size: 0.85rem; font-weight: 600;"></div>
     </div>
 
     <footer style="text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
@@ -371,6 +397,9 @@
       "function remainingMineableSupply() view returns (uint256)",
       "function cooldownRemaining(address miner) view returns (uint256)",
       "function balanceOf(address account) view returns (uint256)",
+      "function owner() view returns (address)",
+      "function miningCooldown() view returns (uint256)",
+      "function setMiningCooldown(uint256 newCooldown) external",
       "function mine() external returns (uint256)"
     ];
 
@@ -379,6 +408,7 @@
     let userSigner = null;
     let userContract = null;
     let userAccount = null;
+    let userHasGas = false;
     let cooldownTimer = null;
 
     async function updateStats() {
@@ -404,16 +434,62 @@
         document.getElementById("statProgressPct").innerText = `${pct}% Minted`;
         document.getElementById("progressFill").style.width = `${pct}%`;
 
-        if (userAccount) {
+        const activeWallet = userAccount || localStorage.getItem("zbtc-connected-wallet");
+
+        if (activeWallet) {
           const [userBal, cooldownSec] = await Promise.all([
-            readContract.balanceOf(userAccount),
-            readContract.cooldownRemaining(userAccount)
+            readContract.balanceOf(activeWallet),
+            readContract.cooldownRemaining(activeWallet)
           ]);
           document.getElementById("userBalance").innerText = `${parseFloat(ethers.formatEther(userBal)).toLocaleString()} ZBTC`;
+          if (!userAccount) {
+            document.getElementById("userAddress").innerText = `${activeWallet.slice(0, 6)}...${activeWallet.slice(-4)} (Saved)`;
+          }
           handleCooldown(Number(cooldownSec));
         }
+
+        await checkOwnerControls();
       } catch (err) {
         console.error("Error updating stats:", err);
+      }
+    }
+
+    async function checkOwnerControls() {
+      try {
+        const [ownerAddr, cdSec] = await Promise.all([
+          readContract.owner(),
+          readContract.miningCooldown()
+        ]);
+        document.getElementById("ownerCurrentCd").innerText = `${cdSec.toString()}s (${(Number(cdSec)/60).toFixed(1)}m)`;
+        const isOwner = userAccount && userAccount.toLowerCase() === ownerAddr.toLowerCase();
+        const ownerPanel = document.getElementById("ownerPanel");
+        if (isOwner) {
+          document.getElementById("ownerAddrLabel").innerText = `${ownerAddr.slice(0, 6)}...${ownerAddr.slice(-4)}`;
+          ownerPanel.style.display = "block";
+        } else {
+          ownerPanel.style.display = "none";
+        }
+      } catch (err) {
+        console.error("Error checking owner controls:", err);
+      }
+    }
+
+    async function changeCooldown(seconds) {
+      if (!userContract) return;
+      const msg = document.getElementById("ownerStatusMsg");
+      try {
+        msg.innerText = `Submitting setMiningCooldown(${seconds}s) transaction on Base Mainnet...`;
+        msg.style.color = "#60a5fa";
+        const tx = await userContract.setMiningCooldown(seconds);
+        msg.innerText = `Tx sent (${tx.hash.slice(0, 10)}...). Waiting for confirmation...`;
+        await tx.wait();
+        msg.innerText = `✅ Success! Mining cooldown is now set to ${seconds} seconds.`;
+        msg.style.color = "#10b981";
+        await updateStats();
+      } catch (err) {
+        console.error("Owner cooldown error:", err);
+        msg.innerText = "❌ Cooldown update failed: " + (err.shortMessage || err.message);
+        msg.style.color = "#ef4444";
       }
     }
 
@@ -423,8 +499,8 @@
       const cooldownMsg = document.getElementById("cooldownMsg");
 
       if (secondsLeft <= 0) {
-        mineBtn.disabled = !userAccount;
-        cooldownMsg.innerText = "Ready to Mine";
+        mineBtn.disabled = !userAccount || !userHasGas;
+        cooldownMsg.innerText = !userAccount ? "Connect Wallet to Mine" : (userHasGas ? "Ready to Mine" : "Base ETH Required for Gas");
         cooldownMsg.classList.remove("active");
         return;
       }
@@ -439,8 +515,8 @@
         cooldownMsg.innerText = `⏳ Mining Cooldown: ${m}m ${s < 10 ? '0' : ''}${s}s`;
         if (remaining <= 0) {
           clearInterval(cooldownTimer);
-          mineBtn.disabled = false;
-          cooldownMsg.innerText = "Ready to Mine";
+          mineBtn.disabled = !userAccount || !userHasGas;
+          cooldownMsg.innerText = userHasGas ? "Ready to Mine" : "Base ETH Required for Gas";
           cooldownMsg.classList.remove("active");
         }
         remaining--;
@@ -450,7 +526,8 @@
       cooldownTimer = setInterval(updateText, 1000);
     }
 
-    async function connectWallet() {
+    async function connectWallet(options = {}) {
+      const silent = options && options.silent;
       let ethProvider = null;
       if (window.rabby) {
         ethProvider = window.rabby;
@@ -463,32 +540,36 @@
       }
 
       if (!ethProvider) {
-        alert("No Web3 wallet extension found! Please install Rabby Wallet or MetaMask.");
+        if (!silent) alert("No Web3 wallet extension found! Please install Rabby Wallet or MetaMask.");
         return;
       }
 
       try {
         let browserProvider = new ethers.BrowserProvider(ethProvider);
-        try {
-          await ethProvider.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] });
-        } catch {
-          // Coinbase Wallet versions without permission revocation continue normally.
+        let accounts = [];
+
+        if (silent) {
+          accounts = await ethProvider.request({ method: "eth_accounts" });
+        } else {
+          try {
+            const permissions = await ethProvider.request({
+              method: "wallet_requestPermissions",
+              params: [{ eth_accounts: {} }]
+            });
+            accounts = permissions?.[0]?.caveats?.find(caveat => caveat.type === "authorized")?.value;
+            if (!accounts) accounts = await ethProvider.request({ method: "eth_requestAccounts" });
+          } catch {
+            accounts = await ethProvider.request({ method: "eth_requestAccounts" });
+          }
         }
-        let accounts;
-        try {
-          const permissions = await ethProvider.request({
-            method: "wallet_requestPermissions",
-            params: [{ eth_accounts: {} }]
-          });
-          accounts = permissions?.[0]?.caveats?.find(caveat => caveat.type === "authorized")?.value;
-          if (!accounts) accounts = await ethProvider.request({ method: "eth_requestAccounts" });
-        } catch {
-          accounts = await ethProvider.request({ method: "eth_requestAccounts" });
-        }
+
         if (!accounts || accounts.length === 0) {
-          throw new Error("No accounts approved by wallet");
+          if (!silent) throw new Error("No accounts approved by wallet");
+          return;
         }
+
         userAccount = accounts[0];
+        localStorage.setItem("zbtc-connected-wallet", userAccount);
 
         // Try auto-switch to Base Mainnet
         try {
@@ -515,19 +596,35 @@
         browserProvider = new ethers.BrowserProvider(ethProvider);
         userSigner = await browserProvider.getSigner();
         userContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, userSigner);
+        const gasBalance = await browserProvider.getBalance(userAccount);
+        userHasGas = gasBalance > 0n;
+        let gasEstimateText = "Gas estimate unavailable.";
+        try {
+          const gasEstimate = await userContract.mine.estimateGas();
+          const feeData = await browserProvider.getFeeData();
+          const estimatedFee = gasEstimate * (feeData.maxFeePerGas || feeData.gasPrice || 0n);
+          gasEstimateText = `Estimated gas: ${gasEstimate.toString()} units, up to ${ethers.formatEther(estimatedFee)} ETH.`;
+        } catch {
+          gasEstimateText = "Gas estimate unavailable; do not sign until your wallet shows the expected fee.";
+        }
+        document.getElementById("gasEstimate").innerText = gasEstimateText;
 
         document.getElementById("connectBtn").innerText = `${userAccount.slice(0, 6)}...${userAccount.slice(-4)}`;
         document.getElementById("disconnectBtn").style.display = "inline-flex";
         document.getElementById("userAddress").innerText = userAccount;
-        document.getElementById("mineBtn").disabled = false;
-        document.getElementById("statusMsg").innerText = "✅ Connected to Base Mainnet!";
-        document.getElementById("statusMsg").style.color = "#10b981";
+        document.getElementById("mineBtn").disabled = !userHasGas;
+        document.getElementById("statusMsg").innerText = userHasGas
+          ? `✅ Connected to Base Mainnet. Gas balance: ${ethers.formatEther(gasBalance)} ETH.`
+          : "⚠️ Connected, but this wallet has 0 Base ETH. Add Base ETH before mining.";
+        document.getElementById("statusMsg").style.color = userHasGas ? "#10b981" : "#f87171";
 
         await updateStats();
       } catch (err) {
-        console.error("Connect error:", err);
-        document.getElementById("statusMsg").innerText = "Failed to connect: " + (err.shortMessage || err.message);
-        document.getElementById("statusMsg").style.color = "#ef4444";
+        if (!silent) {
+          console.error("Connect error:", err);
+          document.getElementById("statusMsg").innerText = "Failed to connect: " + (err.shortMessage || err.message);
+          document.getElementById("statusMsg").style.color = "#ef4444";
+        }
       }
     }
 
@@ -549,6 +646,7 @@
       userAccount = null;
       userSigner = null;
       userContract = null;
+      userHasGas = false;
       clearInterval(cooldownTimer);
       sessionStorage.clear();
       localStorage.removeItem("zbtc-connected-wallet");
@@ -571,6 +669,11 @@
       const statusMsg = document.getElementById("statusMsg");
       try {
         btn.disabled = true;
+        const confirmed = window.confirm("Learning-only warning: this signs a Base Mainnet transaction to the verified ZBTC contract 0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3. You may lose gas and ZBTC has no guaranteed value. Continue?");
+        if (!confirmed) {
+          btn.disabled = false;
+          return;
+        }
         const chainId = await userContract.runner.provider.send("eth_chainId", []);
         if (chainId !== CHAIN_ID_HEX) {
           throw new Error("Wallet is not connected to Base Mainnet. Switch networks and reconnect.");
@@ -600,10 +703,13 @@
 
     document.getElementById("connectBtn").addEventListener("click", connectWallet);
     document.getElementById("disconnectBtn").addEventListener("click", disconnectWallet);
-    document.getElementById("mineBtn").addEventListener("click", triggerMine);
-
+    document.getElementById("mineBtn").addEventListener("click", triggerMine);    document.getElementById("set30SecBtn").addEventListener("click", () => changeCooldown(30));
+    document.getElementById("set1MinBtn").addEventListener("click", () => changeCooldown(60));
+    document.getElementById("set10MinBtn").addEventListener("click", () => changeCooldown(600));
     // Initial load & recurring refresh
-    updateStats();
+    updateStats().then(() => {
+      connectWallet({ silent: true });
+    });
     setInterval(updateStats, 10000);
   </script>
 </body>
