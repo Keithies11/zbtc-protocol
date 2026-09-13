@@ -1,0 +1,30 @@
+{
+  "name": "deflationary-zbtc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy:vibenet": "hardhat run scripts/deploy.js --network vibenet",
+    "mine": "node scripts/mine.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@openzeppelin/contracts": "^5.6.1",
+    "@types/node": "^22.20.2",
+    "dotenv": "^17.4.2",
+    "hardhat": "^2.28.0",
+    "typescript": "~6.0.3"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "ethers": "^6.17.0"
+  }
+}

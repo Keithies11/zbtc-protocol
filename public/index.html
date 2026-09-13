@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZBTC Miner Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #f7931a;
+      --accent-glow: rgba(247, 147, 26, 0.25);
+      --blue: #0052ff;
+      --green: #10b981;
+      --text: #f3f4f6;
+      --text-dim: #9ca3af;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #172033 0%, var(--bg) 70%);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #f7931a, #ffb300);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #000;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .logo-title h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-title p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .btn {
+      background: #1f293d;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background: #2b3852;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #e07e0c);
+      color: #000;
+      border: none;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #ffa32b, #f7931a);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background: #374151;
+      color: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .network-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(0, 82, 255, 0.15);
+      border: 1px solid rgba(0, 82, 255, 0.3);
+      color: #60a5fa;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .network-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3b82f6;
+    }
+
+    .grid-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+    }
+
+    .card-value.highlight {
+      color: var(--accent);
+    }
+
+    .mining-card {
+      background: linear-gradient(180deg, rgba(247, 147, 26, 0.08) 0%, rgba(18, 24, 38, 0.95) 100%);
+      border: 1px solid rgba(247, 147, 26, 0.25);
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .mining-card h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .reward-pill {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(247, 147, 26, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .cooldown-text {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .cooldown-text.active {
+      color: var(--accent);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #1f293d;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f7931a, #0052ff);
+      width: 4.76%;
+      transition: width 0.5s ease;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      width: 100%;
+    }
+
+    .status-msg {
+      font-size: 0.85rem;
+      min-height: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-title">
+          <h1>ZBTC Protocol</h1>
+          <p>Deflationary On-Chain Mining Engine</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <div class="network-badge">
+          <span class="network-dot"></span>
+          Base Mainnet (8453)
+        </div>
+        <button id="connectBtn" class="btn">Connect Wallet</button>
+        <button id="disconnectBtn" class="btn" style="display: none; background: #2a1b1b; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">✕ Disconnect</button>
+      </div>
+    </header>
+
+    <div class="grid-stats">
+      <div class="card">
+        <div class="card-label">Block Reward</div>
+        <div id="statReward" class="card-value highlight">50.0 ZBTC</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Halving Epoch</div>
+        <div id="statEpoch" class="card-value">Epoch 0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Mines Called</div>
+        <div id="statMines" class="card-value">0</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Circulating Supply</div>
+        <div id="statCirculating" class="card-value">1,000,000</div>
+      </div>
+    </div>
+
+    <div class="card mining-card">
+      <h2>Mine ZBTC On-Chain</h2>
+      <p style="color: var(--text-dim); max-width: 500px;">
+        Trigger proof-of-transaction mining. Every epoch (200,000 mines), block rewards halve automatically.
+      </p>
+
+      <div class="reward-pill" id="minePill">
+        +50.0 ZBTC Reward
+      </div>
+
+      <button id="mineBtn" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.15rem;" disabled>
+        ⛏️ Mine ZBTC
+      </button>
+
+      <div id="cooldownMsg" class="cooldown-text">
+        Ready to Mine
+      </div>
+
+      <div id="statusMsg" class="status-msg"></div>
+
+      <div style="width: 100%; margin-top: 1rem;">
+        <div class="info-row">
+          <span>Max Cap: 21,000,000 ZBTC</span>
+          <span id="statProgressPct">4.76% Minted</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="progressFill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-stats">
+      <div class="card">
+        <div class="card-label">Your Wallet Address</div>
+        <div id="userAddress" class="card-value" style="font-size: 0.95rem; word-break: break-all;">Not Connected</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Your ZBTC Balance</div>
+        <div id="userBalance" class="card-value highlight">0.00 ZBTC</div>
+      </div>
+      <div class="card" style="grid-column: 1 / -1; color: #fbbf24; font-size: 0.86rem;">Never remove your wallet account or lose its recovery phrase. Disconnecting only hides it from this site; mined ZBTC remains on-chain.</div>
+    </div>
+
+    <footer style="text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">
+      Contract: <a id="contractLink" href="https://basescan.org/address/0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3" target="_blank" class="mono">0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3</a> (Base Mainnet)
+    </footer>
+  </div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3";
+    const BASE_RPCS = [
+      "https://mainnet.base.org",
+      "https://base-rpc.publicnode.com",
+      "https://base.llamarpc.com"
+    ];
+    const CHAIN_ID = 8453;
+    const CHAIN_ID_HEX = "0x2105";
+
+    const ABI = [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function decimals() view returns (uint8)",
+      "function totalSupply() view returns (uint256)",
+      "function currentReward() view returns (uint256)",
+      "function currentEpoch() view returns (uint256)",
+      "function mineCount() view returns (uint256)",
+      "function remainingMineableSupply() view returns (uint256)",
+      "function cooldownRemaining(address miner) view returns (uint256)",
+      "function balanceOf(address account) view returns (uint256)",
+      "function mine() external returns (uint256)"
+    ];
+
+    let readProvider = new ethers.JsonRpcProvider(BASE_RPCS[0]);
+    let readContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
+    let userSigner = null;
+    let userContract = null;
+    let userAccount = null;
+    let cooldownTimer = null;
+
+    async function updateStats() {
+      try {
+        const [totalSupply, reward, epoch, mineCount, remainingPool] = await Promise.all([
+          readContract.totalSupply(),
+          readContract.currentReward(),
+          readContract.currentEpoch(),
+          readContract.mineCount(),
+          readContract.remainingMineableSupply()
+        ]);
+
+        const supplyEth = parseFloat(ethers.formatEther(totalSupply));
+        const rewardEth = ethers.formatEther(reward);
+        
+        document.getElementById("statReward").innerText = `${rewardEth} ZBTC`;
+        document.getElementById("minePill").innerText = `+${rewardEth} ZBTC Reward`;
+        document.getElementById("statEpoch").innerText = `Epoch ${epoch}`;
+        document.getElementById("statMines").innerText = Number(mineCount).toLocaleString();
+        document.getElementById("statCirculating").innerText = `${supplyEth.toLocaleString()} ZBTC`;
+
+        const pct = ((supplyEth / 21000000) * 100).toFixed(2);
+        document.getElementById("statProgressPct").innerText = `${pct}% Minted`;
+        document.getElementById("progressFill").style.width = `${pct}%`;
+
+        if (userAccount) {
+          const [userBal, cooldownSec] = await Promise.all([
+            readContract.balanceOf(userAccount),
+            readContract.cooldownRemaining(userAccount)
+          ]);
+          document.getElementById("userBalance").innerText = `${parseFloat(ethers.formatEther(userBal)).toLocaleString()} ZBTC`;
+          handleCooldown(Number(cooldownSec));
+        }
+      } catch (err) {
+        console.error("Error updating stats:", err);
+      }
+    }
+
+    function handleCooldown(secondsLeft) {
+      clearInterval(cooldownTimer);
+      const mineBtn = document.getElementById("mineBtn");
+      const cooldownMsg = document.getElementById("cooldownMsg");
+
+      if (secondsLeft <= 0) {
+        mineBtn.disabled = !userAccount;
+        cooldownMsg.innerText = "Ready to Mine";
+        cooldownMsg.classList.remove("active");
+        return;
+      }
+
+      mineBtn.disabled = true;
+      cooldownMsg.classList.add("active");
+
+      let remaining = secondsLeft;
+      const updateText = () => {
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        cooldownMsg.innerText = `⏳ Mining Cooldown: ${m}m ${s < 10 ? '0' : ''}${s}s`;
+        if (remaining <= 0) {
+          clearInterval(cooldownTimer);
+          mineBtn.disabled = false;
+          cooldownMsg.innerText = "Ready to Mine";
+          cooldownMsg.classList.remove("active");
+        }
+        remaining--;
+      };
+
+      updateText();
+      cooldownTimer = setInterval(updateText, 1000);
+    }
+
+    async function connectWallet() {
+      let ethProvider = null;
+      if (window.rabby) {
+        ethProvider = window.rabby;
+      } else if (window.ethereum && window.ethereum.providers && window.ethereum.providers.length > 0) {
+        ethProvider = window.ethereum.providers.find(p => p.isRabby) || 
+                      window.ethereum.providers.find(p => p.isMetaMask) || 
+                      window.ethereum;
+      } else if (window.ethereum) {
+        ethProvider = window.ethereum;
+      }
+
+      if (!ethProvider) {
+        alert("No Web3 wallet extension found! Please install Rabby Wallet or MetaMask.");
+        return;
+      }
+
+      try {
+        let browserProvider = new ethers.BrowserProvider(ethProvider);
+        try {
+          await ethProvider.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] });
+        } catch {
+          // Coinbase Wallet versions without permission revocation continue normally.
+        }
+        let accounts;
+        try {
+          const permissions = await ethProvider.request({
+            method: "wallet_requestPermissions",
+            params: [{ eth_accounts: {} }]
+          });
+          accounts = permissions?.[0]?.caveats?.find(caveat => caveat.type === "authorized")?.value;
+          if (!accounts) accounts = await ethProvider.request({ method: "eth_requestAccounts" });
+        } catch {
+          accounts = await ethProvider.request({ method: "eth_requestAccounts" });
+        }
+        if (!accounts || accounts.length === 0) {
+          throw new Error("No accounts approved by wallet");
+        }
+        userAccount = accounts[0];
+
+        // Try auto-switch to Base Mainnet
+        try {
+          await ethProvider.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: CHAIN_ID_HEX }]
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902 || switchError.code === -32603) {
+            await ethProvider.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: CHAIN_ID_HEX,
+                chainName: "Base",
+                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                rpcUrls: ["https://mainnet.base.org"],
+                blockExplorerUrls: ["https://basescan.org"]
+              }]
+            });
+          }
+        }
+
+        // Recreate the provider after switching chains so ethers uses Base state.
+        browserProvider = new ethers.BrowserProvider(ethProvider);
+        userSigner = await browserProvider.getSigner();
+        userContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, userSigner);
+
+        document.getElementById("connectBtn").innerText = `${userAccount.slice(0, 6)}...${userAccount.slice(-4)}`;
+        document.getElementById("disconnectBtn").style.display = "inline-flex";
+        document.getElementById("userAddress").innerText = userAccount;
+        document.getElementById("mineBtn").disabled = false;
+        document.getElementById("statusMsg").innerText = "✅ Connected to Base Mainnet!";
+        document.getElementById("statusMsg").style.color = "#10b981";
+
+        await updateStats();
+      } catch (err) {
+        console.error("Connect error:", err);
+        document.getElementById("statusMsg").innerText = "Failed to connect: " + (err.shortMessage || err.message);
+        document.getElementById("statusMsg").style.color = "#ef4444";
+      }
+    }
+
+    async function disconnectWallet() {
+      const firstConfirm = window.confirm("Disconnect this wallet from the dashboard? Your ZBTC stays in the wallet, but you must keep its recovery phrase/private key to access it later.");
+      if (!firstConfirm) return;
+      const secondConfirm = window.confirm("Are you sure? Do not remove or delete the wallet account. Confirm disconnect only.");
+      if (!secondConfirm) return;
+
+      try {
+        const provider = userContract?.runner?.provider;
+        if (provider?.send) {
+          await provider.send("wallet_revokePermissions", [{ eth_accounts: {} }]);
+        }
+      } catch {
+        // Some wallet providers do not implement permission revocation.
+      }
+
+      userAccount = null;
+      userSigner = null;
+      userContract = null;
+      clearInterval(cooldownTimer);
+      sessionStorage.clear();
+      localStorage.removeItem("zbtc-connected-wallet");
+
+      document.getElementById("connectBtn").innerText = "Connect Wallet";
+      document.getElementById("disconnectBtn").style.display = "none";
+      document.getElementById("userAddress").innerText = "Not Connected";
+      document.getElementById("userBalance").innerText = "0.00 ZBTC";
+      document.getElementById("mineBtn").disabled = true;
+      document.getElementById("cooldownMsg").innerText = "Ready to Mine";
+      document.getElementById("cooldownMsg").classList.remove("active");
+      document.getElementById("statusMsg").innerText = "Wallet disconnected.";
+      document.getElementById("statusMsg").style.color = "var(--text-dim)";
+    }
+
+    async function triggerMine() {
+      if (!userContract) return;
+
+      const btn = document.getElementById("mineBtn");
+      const statusMsg = document.getElementById("statusMsg");
+      try {
+        btn.disabled = true;
+        const chainId = await userContract.runner.provider.send("eth_chainId", []);
+        if (chainId !== CHAIN_ID_HEX) {
+          throw new Error("Wallet is not connected to Base Mainnet. Switch networks and reconnect.");
+        }
+        statusMsg.innerText = "Submitting mine() transaction to Base Mainnet...";
+        statusMsg.style.color = "#60a5fa";
+
+        const tx = await userContract.mine();
+        statusMsg.innerText = `Tx broadcasted: ${tx.hash.slice(0, 10)}... waiting for confirmation...`;
+
+        await tx.wait();
+        statusMsg.innerText = "🎉 Mine confirmed! ZBTC rewards added to your wallet.";
+        statusMsg.style.color = "#10b981";
+
+        await updateStats();
+      } catch (err) {
+        console.error("Mine error:", err);
+        const message = err?.info?.error?.message || err?.shortMessage || err?.reason || err?.message || "Wallet RPC failed";
+        const rpcFailure = /failed to fetch|could not coalesce|eth_blocknumber|network/i.test(message);
+        statusMsg.innerText = rpcFailure
+          ? "❌ Wallet RPC unavailable. Switch Coinbase Wallet to Base Mainnet, ensure Base ETH is available, then disconnect and reconnect."
+          : "❌ Mining failed: " + message;
+        statusMsg.style.color = "#ef4444";
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById("connectBtn").addEventListener("click", connectWallet);
+    document.getElementById("disconnectBtn").addEventListener("click", disconnectWallet);
+    document.getElementById("mineBtn").addEventListener("click", triggerMine);
+
+    // Initial load & recurring refresh
+    updateStats();
+    setInterval(updateStats, 10000);
+  </script>
+</body>
+</html>
