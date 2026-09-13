@@ -21,6 +21,9 @@
 .env.*
 !.env.example
 
+# Runtime logs
+*.log
+
 # Hardhat coverage reports
 /coverage
 
