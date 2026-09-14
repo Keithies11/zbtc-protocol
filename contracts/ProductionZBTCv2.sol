@@ -61,7 +61,7 @@ contract ProductionZBTCv2 is ERC20, Ownable2Step {
      * @notice Constructor initializes the token name, symbol, two-step owner, and founder pre-mine allocation.
      * @param founder_ Destination address receiving the 1,000,000 ZBTC founder allocation.
      */
-    constructor(address founder_) ERC20("ZBTC Production v2", "ZBTC") Ownable(founder_) {
+    constructor(address founder_) ERC20("ZBTC", "ZBTC") Ownable(founder_) {
         require(founder_ != address(0), "Founder cannot be zero address");
         _mint(founder_, FOUNDER_SUPPLY);
     }
