@@ -5,10 +5,10 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 ## 📊 Live Smart Contract Details
 
 - **Network:** Base Mainnet (Chain ID `8453`)
-- **Contract Address:** [`0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3`](https://basescan.org/address/0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3)
+- **Contract Address:** [`0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2`](https://basescan.org/address/0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2)
 - **BaseScan Verification:** Verified Source Code (Exact Match, Solidity `0.8.20`)
 - **Total Hard Cap:** `21,000,000 ZBTC`
-- **Founder Allocation:** `1,000,000 ZBTC` (Minted to personal wallet `0xca965C054a2D563F0c72ea418f851C7f8371aaB8`)
+- **Founder Allocation:** `1,000,000 ZBTC` (Minted to personal wallet `0x93DeEdc7e8A621C1165159bE94e957594796D15D`)
 - **Mineable Pool:** `20,000,000 ZBTC` (Emitted via on-chain `mine()` calls)
 
 ---
