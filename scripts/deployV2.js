@@ -3,7 +3,7 @@ require("dotenv").config();
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const founderDestination = process.env.FOUNDER_WALLET_ADDRESS || process.env.DEPLOYMENT_WALLET_ADDRESS || "0x93DeEdc7e8A621C1165159bE94e957594796D15D";
+  const founderDestination = process.env.FOUNDER_WALLET_ADDRESS || "0x93DeEdc7e8A621C1165159bE94e957594796D15D";
 
   console.log("==================================================");
   console.log("🚀 PRODUCTION ZBTC v2 PRE-DEPLOYMENT & DEPLOY");
