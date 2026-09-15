@@ -12,8 +12,8 @@ async function main() {
   }
 
   const wallet = new ethers.Wallet(privateKey, provider);
-  // ProductionZBTC verified address on Base Mainnet
-  const contractAddress = "0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3";
+  // Active ProductionZBTCv2 address on Base Mainnet
+  const contractAddress = "0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2";
 
   const abi = [
     "function mine() external returns (uint256)",

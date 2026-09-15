@@ -2,7 +2,7 @@ const { ethers } = require("ethers");
 require("dotenv").config();
 
 async function main() {
-  const rpcUrl = "https://rpc.vibes.base.org";
+  const rpcUrl = process.env.BASE_MAINNET_RPC || "https://mainnet.base.org";
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   
   const privateKey = process.env.PRIVATE_KEY;
@@ -11,7 +11,7 @@ async function main() {
   }
 
   const wallet = new ethers.Wallet(privateKey, provider);
-  const contractAddress = "0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3";
+  const contractAddress = "0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2";
 
   const abi = [
     "function mine() external returns (uint256)",

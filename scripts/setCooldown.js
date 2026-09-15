@@ -12,7 +12,7 @@ async function main() {
   }
 
   const wallet = new ethers.Wallet(privateKey, provider);
-  const contractAddress = "0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3";
+  const contractAddress = "0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2";
 
   const abi = [
     "function owner() view returns (address)",
