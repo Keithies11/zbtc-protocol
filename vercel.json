@@ -4,6 +4,10 @@
     {
       "src": "public/index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "public/legacy-v1-miner.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
