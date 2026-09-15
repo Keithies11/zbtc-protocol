@@ -279,9 +279,14 @@
           Base Mainnet (8453)
         </div>
         <button id="connectBtn" class="btn">Connect Wallet</button>
-        <button id="disconnectBtn" class="btn" style="display: none; background: #2a1b1b; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">✕ Disconnect</button>
+        <button id="disconnectBtn" class="btn" style="display: none; background: #2a1b1b; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Disconnect this site from the connected wallet">✕ Disconnect Wallet</button>
       </div>
     </header>
+
+    <aside class="card" role="alert" style="margin: 1rem 0; border: 1px solid rgba(248, 113, 113, 0.55); background: rgba(127, 29, 29, 0.2); color: #fecaca;">
+      <strong style="display: block; color: #fca5a5; margin-bottom: 0.35rem;">⚠️ Wallet safety warning</strong>
+      <span>Connect only a new wallet you control. Never enter a seed phrase or private key here. Do not use old or compromised wallets, and never send funds to a wallet you no longer control. Disconnecting only removes this site’s connection; it cannot reverse blockchain transactions.</span>
+    </aside>
 
     <div class="grid-stats">
       <div class="card">
