@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/legacy-v1-miner.html",
+      "dest": "public/legacy-v1-miner.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "public/index.html"
     }
