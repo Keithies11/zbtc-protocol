@@ -6,14 +6,25 @@
       "use": "@vercel/static"
     },
     {
-      "src": "public/legacy-v1-miner.html",
+      "src": "public/zyn-twitter-header.png",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/legacy-v1-miner.html",
-      "dest": "public/legacy-v1-miner.html"
+      "src": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "temporary-prompt-emerald-zsr9wxt.vercel.app"
+        }
+      ],
+      "dest": "https://miner.zynintel.com/$1",
+      "status": 308
+    },
+    {
+      "src": "/zyn-twitter-header.png",
+      "dest": "/public/zyn-twitter-header.png"
     },
     {
       "src": "/(.*)",

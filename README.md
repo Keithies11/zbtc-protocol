@@ -6,7 +6,7 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 
 - **Network:** Base Mainnet (Chain ID `8453`)
 - **Contract Address:** [`0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2`](https://basescan.org/address/0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2)
-- **BaseScan Verification:** Verified Source Code (Exact Match, Solidity `0.8.20`)
+- **Source verification:** Check the current published source and compiler settings on BaseScan; local source does not prove deployed-source equivalence.
 - **Total Hard Cap:** `21,000,000 ZBTC`
 - **Founder Allocation:** `1,000,000 ZBTC` (Minted to personal wallet `0x93DeEdc7e8A621C1165159bE94e957594796D15D`)
 - **Mineable Pool:** `20,000,000 ZBTC` (Emitted via on-chain `mine()` calls)
@@ -15,12 +15,22 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 
 ## 🛠 Project Structure
 
-- `contracts/ProductionZBTC.sol`: Production smart contract with 200k-mine geometric halving epochs and 10-minute anti-spam cooldowns.
+- `contracts/ProductionZBTCv2.sol`: Production v2 smart contract with 200k-claim geometric halving epochs and an owner-adjustable per-address cooldown.
 - `public/index.html`: Web dApp frontend for wallet connection (Rabby, MetaMask, Coinbase Wallet) and live 1-click mining.
 - `scripts/mine.js`: Interactive CLI miner.
 - `scripts/autolooppMine.js`: Automated 24/7 background mining bot with cooldown sleeping logic.
 - `scripts/deployMainnet.js`: Pre-flight gas simulation and deployment script.
 - `vercel.json`: Configuration for instant Vercel static deployment.
+
+## 🔎 Transparency Dashboard
+
+The miner page includes a read-only transparency panel that reads the deployed contract's supply cap, founder allocation, mineable reserve, mined amount, remaining reserve, reward parameters, cooldown, and current owner from Base Mainnet. The panel reports when reads fail and links to BaseScan so users can independently inspect contract state and transactions.
+
+On-chain parameters and supply are not a security audit, a guarantee of source verification, a promise of market value, or evidence that ZBTC can be sold at a displayed price. Check pool liquidity and transaction impact separately before taking action.
+
+## ⚠️ Known Operational Limitation
+
+The ZBTC/USDC pool currently has very low liquidity (most recently observed TVL was approximately $16.40). The dashboard labels the spot price as indicative and warns that trades may have extreme price impact or may not execute at that price. Recheck live pool reserves before any transaction; no market value or exit liquidity is guaranteed.
 
 ---
 
@@ -29,6 +39,12 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 ```bash
 # Run local smart contract unit tests
 npm test
+
+# Deploy to Base Sepolia (safe test network)
+npm run deploy:v2
+
+# Mainnet deployment requires explicit network selection and confirmation
+CONFIRM_MAINNET_DEPLOY=YES npm run deploy:v2:mainnet
 
 # Mine interactively via CLI
 npm run mine
@@ -74,7 +90,7 @@ node server.js
 2. **Community Setup:**
    - Twitter / X, Telegram, Discord channels for halving metrics & block rewards.
 3. **BaseScan Token Profile:**
-   - Open contract `0x47FAf4Ee3369EBF6867Aa8044A88015A8Ff1B0d3` on BaseScan.
+   - Open the active ZBTC contract `0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2` on BaseScan.
    - Click "Update Token Info" to upload logo and website URL.
 4. **Security Rules:**
    - Private key stays ONLY in `.env`.

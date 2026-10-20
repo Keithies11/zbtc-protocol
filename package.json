@@ -10,7 +10,8 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy:vibenet": "hardhat run scripts/deploy.js --network vibenet",
-    "deploy:v2": "hardhat run scripts/deployV2.js",
+    "deploy:v2": "hardhat run scripts/deployV2.js --network baseSepolia",
+    "deploy:v2:mainnet": "hardhat run scripts/deployV2.js --network baseMainnet",
     "mine": "node scripts/mine.js"
   },
   "keywords": [],
