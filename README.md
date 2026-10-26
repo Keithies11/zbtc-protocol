@@ -16,7 +16,7 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 ## 🛠 Project Structure
 
 - `contracts/ProductionZBTCv2.sol`: Production v2 smart contract with 200k-claim geometric halving epochs and an owner-adjustable per-address cooldown.
-- `public/index.html`: Web dApp frontend for wallet connection (Rabby, MetaMask, Coinbase Wallet) and live 1-click mining.
+- `public/index.html`: Web dApp frontend for wallet connection (Rabby, MetaMask, Coinbase, Trust, OKX, and compatible injected EVM wallets) and live 1-click mining.
 - `scripts/mine.js`: Interactive CLI miner.
 - `scripts/autolooppMine.js`: Automated 24/7 background mining bot with cooldown sleeping logic.
 - `scripts/deployMainnet.js`: Pre-flight gas simulation and deployment script.
