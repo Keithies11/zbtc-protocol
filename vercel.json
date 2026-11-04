@@ -1,34 +1,25 @@
 {
-  "version": 2,
-  "builds": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "public",
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "redirects": [
     {
-      "src": "public/index.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/zyn-twitter-header.png",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
+      "source": "/:path*",
       "has": [
         {
           "type": "host",
           "value": "temporary-prompt-emerald-zsr9wxt.vercel.app"
         }
       ],
-      "dest": "https://miner.zynintel.com/$1",
-      "status": 308
-    },
+      "destination": "https://miner.zynintel.com/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
     {
-      "src": "/zyn-twitter-header.png",
-      "dest": "/public/zyn-twitter-header.png"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "public/index.html"
+      "source": "/((?!zyn-twitter-header\\.png$).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

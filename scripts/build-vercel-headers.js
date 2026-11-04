@@ -47,7 +47,28 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
-const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-config.headers = [{ source: "/(.*)", headers: securityHeaders }];
+// The legacy `builds`/`routes` schema makes Vercel ignore the top-level `headers`
+// key, so the whole file is emitted in the modern schema. Static assets in public/
+// are served as-is: a static deployment needs no build definition.
+const config = {
+  $schema: "https://openapi.vercel.sh/vercel.json",
+  outputDirectory: "public",
+  cleanUrls: false,
+  trailingSlash: false,
+  redirects: [
+    {
+      // Keep the generated .vercel.app hostname pointing at the canonical domain.
+      source: "/:path*",
+      has: [{ type: "host", value: "temporary-prompt-emerald-zsr9wxt.vercel.app" }],
+      destination: "https://miner.zynintel.com/:path*",
+      permanent: true,
+    },
+  ],
+  rewrites: [
+    // Single-page static site: every path other than real files serves the miner page.
+    { source: "/((?!zyn-twitter-header\\.png$).*)", destination: "/index.html" },
+  ],
+  headers: [{ source: "/(.*)", headers: securityHeaders }],
+};
 fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
-console.log(`vercel.json headers updated (script hash ${scriptHash})`);
+console.log(`vercel.json regenerated (script hash ${scriptHash})`);

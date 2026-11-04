@@ -14,6 +14,18 @@ const header = (key) => rule.headers.find((h) => h.key === key)?.value;
 const directive = (name) => header("Content-Security-Policy").split(";").map((s) => s.trim()).find((s) => s.startsWith(`${name} `))?.slice(name.length + 1).split(/\s+/) || [];
 
 describe("Vercel security headers", function () {
+  it("uses the modern schema so headers are actually applied", function () {
+    // With the legacy builds/routes schema Vercel silently ignores the headers key.
+    expect(config).to.not.have.property("builds");
+    expect(config).to.not.have.property("routes");
+    expect(config.outputDirectory).to.equal("public");
+    const redirect = config.redirects.find((r) => r.has?.some((h) => h.type === "host" && h.value === "temporary-prompt-emerald-zsr9wxt.vercel.app"));
+    expect(redirect, ".vercel.app -> canonical domain redirect").to.exist;
+    expect(redirect.destination).to.equal("https://miner.zynintel.com/:path*");
+    expect(redirect.permanent).to.equal(true);
+    expect(config.rewrites.some((r) => r.destination === "/index.html"), "catch-all rewrite to the miner page").to.equal(true);
+  });
+
   it("applies a header rule to every path", function () {
     expect(rule, "headers rule for /(.*)").to.exist;
     for (const key of ["Content-Security-Policy", "X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "Strict-Transport-Security"]) {
