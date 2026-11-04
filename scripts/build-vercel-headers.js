@@ -1,29 +1,27 @@
 #!/usr/bin/env node
-// Regenerates the security headers in vercel.json from public/index.html.
-// The CSP script-src uses a hash of the single inline <script>, so it must be
-// recomputed whenever that script changes. Run: node scripts/build-vercel-headers.js
+// Regenerates the security headers in vercel.json for the static miner site.
+// Run: node scripts/build-vercel-headers.js
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const htmlPath = path.join(root, "public", "index.html");
 const configPath = path.join(root, "vercel.json");
 
 const html = fs.readFileSync(htmlPath, "utf8");
-const inlineScripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-if (inlineScripts.length !== 1) {
-  throw new Error(`Expected exactly one inline <script> in public/index.html, found ${inlineScripts.length}`);
+const inlineScripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
+  .filter((match) => match[1].trim());
+if (inlineScripts.length > 0) {
+  throw new Error(`Inline executable scripts are not permitted in public/index.html (found ${inlineScripts.length})`);
 }
-const scriptHash = `'sha256-${crypto.createHash("sha256").update(inlineScripts[0], "utf8").digest("base64")}'`;
 
 // Every origin the page legitimately touches. Wallet extensions inject their own
 // providers and are not governed by the page CSP; deep links (rabby://, okx://,
 // link.metamask.io, ...) are navigations, which CSP does not restrict.
 const csp = [
   "default-src 'none'",
-  `script-src ${scriptHash} https://cdn.jsdelivr.net https://zynintel.com`,
+  "script-src 'self' https://cdn.jsdelivr.net https://zynintel.com",
   // Inline style attributes and the wallet picker's cssText require 'unsafe-inline';
   // scripts remain hash/origin-locked so this does not allow code execution.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -71,4 +69,4 @@ const config = {
   headers: [{ source: "/(.*)", headers: securityHeaders }],
 };
 fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
-console.log(`vercel.json regenerated (script hash ${scriptHash})`);
+console.log("vercel.json regenerated (external scripts only)");

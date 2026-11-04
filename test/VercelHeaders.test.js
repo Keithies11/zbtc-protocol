@@ -1,10 +1,7 @@
-// Guards the static-site security headers in vercel.json. The CSP pins the inline
-// miner script by hash, so any edit to that script must be followed by
-// `node scripts/build-vercel-headers.js`; this test fails if the two drift apart.
+// Guards the static-site security headers and the external-only script policy.
 const { expect } = require("chai");
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "public", "index.html"), "utf8");
@@ -35,12 +32,17 @@ describe("Vercel security headers", function () {
     expect(header("X-Content-Type-Options")).to.equal("nosniff");
   });
 
-  it("pins the current inline miner script by hash and allows no other inline script", function () {
-    const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-    expect(inline, "exactly one inline script").to.have.length(1);
-    const hash = `'sha256-${crypto.createHash("sha256").update(inline[0], "utf8").digest("base64")}'`;
+  it("serves miner code externally and allows no inline executable script", function () {
+    const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+    expect(scripts, "all script tags should have a src attribute").to.have.length.greaterThan(0);
+    for (const [, attributes, content] of scripts) {
+      expect(attributes).to.match(/\bsrc\s*=/i);
+      expect(content.trim()).to.equal("");
+    }
+    expect(fs.existsSync(path.join(root, "public", "miner.js"))).to.equal(true);
+    expect(html).to.include('<script src="/miner.js"></script>');
     const scriptSrc = directive("script-src");
-    expect(scriptSrc, "run: node scripts/build-vercel-headers.js").to.include(hash);
+    expect(scriptSrc).to.include("'self'");
     expect(scriptSrc).to.not.include("'unsafe-inline'");
     expect(scriptSrc).to.not.include("'unsafe-eval'");
     expect(html).to.not.match(/ on[a-z]+="/i, "inline event handlers would be blocked by the CSP");
