@@ -5,6 +5,17 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "temporary-prompt-emerald-zsr9wxt.vercel.app"
+        }
+      ],
+      "destination": "https://miner.zynintel.com/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {

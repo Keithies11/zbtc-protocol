@@ -55,6 +55,12 @@ const config = {
   trailingSlash: false,
   redirects: [
     {
+      source: "/",
+      has: [{ type: "host", value: "temporary-prompt-emerald-zsr9wxt.vercel.app" }],
+      destination: "https://miner.zynintel.com/",
+      permanent: true,
+    },
+    {
       // Keep the generated .vercel.app hostname pointing at the canonical domain.
       source: "/:path*",
       has: [{ type: "host", value: "temporary-prompt-emerald-zsr9wxt.vercel.app" }],

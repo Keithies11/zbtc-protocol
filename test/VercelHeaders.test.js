@@ -16,10 +16,11 @@ describe("Vercel security headers", function () {
     expect(config).to.not.have.property("builds");
     expect(config).to.not.have.property("routes");
     expect(config.outputDirectory).to.equal("public");
-    const redirect = config.redirects.find((r) => r.has?.some((h) => h.type === "host" && h.value === "temporary-prompt-emerald-zsr9wxt.vercel.app"));
-    expect(redirect, ".vercel.app -> canonical domain redirect").to.exist;
-    expect(redirect.destination).to.equal("https://miner.zynintel.com/:path*");
-    expect(redirect.permanent).to.equal(true);
+    const redirects = config.redirects.filter((r) => r.has?.some((h) => h.type === "host" && h.value === "temporary-prompt-emerald-zsr9wxt.vercel.app"));
+    expect(redirects, ".vercel.app -> canonical domain redirects").to.have.length(2);
+    expect(redirects.find((r) => r.source === "/")?.destination).to.equal("https://miner.zynintel.com/");
+    expect(redirects.find((r) => r.source === "/:path*")?.destination).to.equal("https://miner.zynintel.com/:path*");
+    for (const redirect of redirects) expect(redirect.permanent).to.equal(true);
     expect(config.rewrites.some((r) => r.destination === "/index.html"), "catch-all rewrite to the miner page").to.equal(true);
   });
 
