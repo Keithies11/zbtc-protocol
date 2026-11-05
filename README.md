@@ -6,7 +6,7 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 
 - **Network:** Base Mainnet (Chain ID `8453`)
 - **Contract Address:** [`0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2`](https://basescan.org/address/0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2)
-- **Source verification:** Check the current published source and compiler settings on BaseScan; local source does not prove deployed-source equivalence.
+- **Source verification:** BaseScan-verified `ProductionZBTCv2` (solc 0.8.20, optimizer off). Local `contracts/ProductionZBTCv2.sol` matches the verified executable source, including the on-chain token name `ZBTC Production v2`; re-check BaseScan before relying on any local edit.
 - **Total Hard Cap:** `21,000,000 ZBTC`
 - **Founder Allocation:** `1,000,000 ZBTC` (Minted to personal wallet `0x93DeEdc7e8A621C1165159bE94e957594796D15D`)
 - **Mineable Pool:** `20,000,000 ZBTC` (Emitted via on-chain `mine()` calls)

@@ -16,6 +16,12 @@ describe("ProductionZBTCv2", function () {
     await token.waitForDeployment();
   });
 
+  it("matches the BaseScan-verified deployment's token name and symbol", async function () {
+    expect(await token.name()).to.equal("ZBTC Production v2");
+    expect(await token.symbol()).to.equal("ZBTC");
+    expect(await token.decimals()).to.equal(18);
+  });
+
   it("Should correctly mint founder 1M allocation and initialize cap", async function () {
     const founderBal = await token.balanceOf(owner.address);
     expect(founderBal).to.equal(ethers.parseEther("1000000"));
