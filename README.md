@@ -27,6 +27,9 @@ Deflationary, Bitcoin-inspired proof-of-transaction mining ERC-20 token deployed
 The mining button, live reward, cooldown and transaction status appear near the
 top, immediately after wallet safety. Gas/value/farming warnings remain visible;
 longer mining rules and emissions disclosures expand below the controls.
+The ZYN member and admin miners use the same control-first layout and accessible
+transaction status. Telegram `/miningpolicy` links to the live rules; it does not
+sign or submit mining transactions.
 
 The miner page includes a read-only transparency panel that reads the deployed contract's supply cap, founder allocation, mineable reserve, mined amount, remaining reserve, reward parameters, cooldown, and current owner from Base Mainnet. The panel reports when reads fail and links to BaseScan so users can independently inspect contract state and transactions.
 
