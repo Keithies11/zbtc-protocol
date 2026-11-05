@@ -464,6 +464,7 @@
       const claimContract = userContract;
       const claimAccount = userAccount;
       const claimProvider = selectedWalletProvider;
+      let submittedHash = null;
 
       const btn = document.getElementById("mineBtn");
       const statusMsg = document.getElementById("statusMsg");
@@ -486,9 +487,18 @@
         const currentAccounts = await claimProvider.request({ method: "eth_accounts" });
         if (userContract !== claimContract || String(currentAccounts[0]).toLowerCase() !== claimAccount.toLowerCase()) throw new Error("Wallet account changed. Reconnect before mining.");
         const tx = await claimContract.mine();
+        submittedHash = tx.hash;
         statusMsg.innerText = `Tx broadcasted: ${tx.hash.slice(0, 10)}... waiting for confirmation...`;
 
-        const receipt = await tx.wait();
+        const receipt = await tx.wait().catch(error => {
+          if (error.code === "TRANSACTION_REPLACED" && !error.cancelled && error.reason === "repriced") return error.receipt;
+          throw error;
+        });
+        if (!receipt || receipt.status !== 1) {
+          const error = new Error("Mining transaction was not confirmed successfully; check its status on BaseScan.");
+          error.receipt = receipt;
+          throw error;
+        }
         const minedEvent = receipt?.logs
           .filter((log) => log.address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase())
           .map((log) => {
@@ -497,14 +507,14 @@
           .find((event) => event?.name === "Mined" && event.args.miner.toLowerCase() === claimAccount.toLowerCase());
         const actualReward = minedEvent ? ethers.formatEther(minedEvent.args.reward) : null;
         statusMsg.innerText = actualReward
-          ? `🎉 Mine confirmed! +${Number(actualReward).toLocaleString()} ZBTC added to your wallet.`
-          : "Transaction confirmed. Reward amount is not available in the receipt; verify the claim on BaseScan.";
-        statusMsg.style.color = "#10b981";
+          ? `🎉 Mine confirmed! +${Number(actualReward).toLocaleString(undefined, { maximumFractionDigits: 18 })} ZBTC added to your wallet.`
+          : "Transaction confirmed, but no matching mining reward event was found. Verify the claim on BaseScan; no reward is confirmed by this page.";
+        statusMsg.style.color = actualReward ? "#10b981" : "#fbbf24";
         try {
           await fetch("https://zynintel.com/api/public/zbtc-claim-verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ txHash: tx.hash }),
+            body: JSON.stringify({ txHash: receipt.hash || tx.hash }),
           });
         } catch {
           // The server indexer picks the claim up within a minute anyway.
@@ -515,6 +525,11 @@
       } catch (err) {
         console.error("Mine error:", err);
         const message = err?.info?.error?.message || err?.shortMessage || err?.reason || err?.message || "Wallet RPC failed";
+        if (submittedHash && err?.receipt?.status !== 0 && err?.code !== "TRANSACTION_REPLACED") {
+          statusMsg.innerText = `Mining transaction ${submittedHash} was submitted, but its outcome is unverified. Check BaseScan before trying again. ${message}`;
+          statusMsg.style.color = "#fbbf24";
+          return;
+        }
         const rpcFailure = /failed to fetch|could not coalesce|eth_blocknumber|network/i.test(message);
         statusMsg.innerText = rpcFailure
           ? "❌ Wallet RPC unavailable. Switch your wallet to Base Mainnet, ensure Base ETH is available, then disconnect and reconnect."

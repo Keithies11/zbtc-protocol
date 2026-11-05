@@ -30,6 +30,11 @@ longer mining rules and emissions disclosures expand below the controls.
 The ZYN member and admin miners use the same control-first layout and accessible
 transaction status. Telegram `/miningpolicy` links to the live rules; it does not
 sign or submit mining transactions.
+Receipt success is checked before reporting confirmation. Only a matching
+contract `Mined` event confirms a reward. Fee-speedups use the replacement
+receipt/hash; cancelled or different replacement transactions do not confirm
+mining. If RPC confirmation fails after broadcast, check the displayed hash on
+BaseScan before submitting again; the outcome is unknown, not proven failure.
 
 The miner page includes a read-only transparency panel that reads the deployed contract's supply cap, founder allocation, mineable reserve, mined amount, remaining reserve, reward parameters, cooldown, and current owner from Base Mainnet. The panel reports when reads fail and links to BaseScan so users can independently inspect contract state and transactions.
 
