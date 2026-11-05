@@ -21,6 +21,11 @@ import "@openzeppelin/contracts/access/Ownable2Step.sol";
  *     Epoch 0: 50 ZBTC per mine (200,000 mines = 10,000,000 ZBTC)
  *     Epoch 1: 25 ZBTC per mine (200,000 mines = 5,000,000 ZBTC)
  *     Epoch 2: 12.5 ZBTC per mine (200,000 mines = 2,500,000 ZBTC)
+ *
+ * This contract is not upgradeable. Cooldown is owner-adjustable per address,
+ * not per person; contract callers and multi-address farming are permitted.
+ * No automatic epoch cooldown schedule is enforced. The epoch-64 cutoff and
+ * integer rounding leave 5,800,000 token wei unminted below the cap.
  */
 contract ProductionZBTCv2 is ERC20, Ownable2Step {
     uint256 public constant TOTAL_SUPPLY_CAP = 21_000_000 * 1e18;
@@ -143,6 +148,8 @@ contract ProductionZBTCv2 is ERC20, Ownable2Step {
 
     /**
      * @notice Updates the mining cooldown duration. Restricted to the contract owner.
+     * @dev Unbounded setter; changes apply to every address's existing last-claim
+     * timestamp. UI safety presets are not on-chain restrictions.
      * @param newCooldown New cooldown duration in seconds.
      */
     function setMiningCooldown(uint256 newCooldown) external onlyOwner {

@@ -579,17 +579,17 @@
         ⚙️ Contract Owner Controls (<span id="ownerAddrLabel" style="font-family: monospace;"></span>)
       </div>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">
-        As contract owner, you can adjust the on-chain mining cooldown for testing or production. Current Cooldown: <strong id="ownerCurrentCd" style="color: #fff;">--</strong>
+        Owner safety controls only increase the current cooldown to 30, 60 or 120 minutes. They do not enforce a halving schedule or prevent multi-address farming. Each change requires typed confirmation and a wallet signature; cancelling sends nothing. Current Cooldown: <strong id="ownerCurrentCd" style="color: #fff;">--</strong>
       </p>
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-        <button type="button" id="set30SecBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #eab308; color: #000;">
-          ⚡ Set 30 Sec Cooldown
+        <button type="button" id="set30MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #eab308; color: #000;">
+          Review 30 Min Cooldown
         </button>
-        <button type="button" id="set1MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #f7931a; color: #000;">
-          ⚡ Set 1 Min Cooldown
+        <button type="button" id="set60MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #f7931a; color: #000;">
+          Review 60 Min Cooldown
         </button>
-        <button type="button" id="set10MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #243447; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
-          ⏰ Reset 10 Min Cooldown
+        <button type="button" id="set120MinBtn" class="btn" style="font-size: 0.88rem; padding: 0.6rem 1.2rem; background: #243447; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+          Review 120 Min Cooldown
         </button>
       </div>
       <div id="ownerStatusMsg" style="margin-top: 0.75rem; font-size: 0.85rem; font-weight: 600;"></div>
@@ -607,6 +607,7 @@
   </div>
 
   <script src="https://zynintel.com/js/wallet-connection-v2.js?v=20261026-beta-wallets" integrity="sha384-dIE4/fBzIosX8X0gwAJ5qvGmZZsMbXk4e0OkUKCDyU+9oKaWvWU+tDhHoc+FIrEb" crossorigin="anonymous"></script>
+  <script src="https://zynintel.com/js/mining-owner-controls.js?v=20261105-owner-review" integrity="sha384-mP2ySx2NSRpi1Jx2MNsffGsT5UCkVcrUbKrAth2ztVZ87sMPMKXF21YvCgrBE18G" crossorigin="anonymous"></script>
   <script src="/miner.js"></script>
 </body>
 </html>

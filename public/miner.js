@@ -255,6 +255,10 @@
       ownerActionInFlight = true;
       try {
         await window.ZynWalletConnection.verifyBaseOwnerContext(signer, account, () => readContract.owner());
+        if (!await window.ZynWalletConnection.confirmCooldownIncrease(signer, account, readContract, seconds, CONTRACT_ADDRESS)) {
+          msg.innerText = "Cooldown change cancelled; no transaction sent.";
+          return;
+        }
         if (userContract !== contract || userSigner !== signer || userAccount?.toLowerCase() !== account.toLowerCase()) {
           throw new Error("Wallet changed. Reconnect before changing cooldown.");
         }
@@ -262,7 +266,8 @@
         msg.style.color = "#60a5fa";
         const tx = await contract.setMiningCooldown(seconds);
         msg.innerText = `Tx sent (${tx.hash.slice(0, 10)}...). Waiting for confirmation...`;
-        await tx.wait();
+        const receipt = await tx.wait();
+        if (!receipt || receipt.status !== 1) throw new Error("Cooldown transaction was not confirmed successfully.");
         msg.innerText = `✅ Success! Mining cooldown is now set to ${seconds} seconds.`;
         msg.style.color = "#10b981";
         await updateStats();
@@ -525,9 +530,9 @@
     document.getElementById("connectBtn").addEventListener("click", () => connectWallet());
     document.getElementById("disconnectBtn").addEventListener("click", disconnectWallet);
     document.getElementById("mineBtn").addEventListener("click", triggerMine);
-    document.getElementById("set30SecBtn").addEventListener("click", () => changeCooldown(30));
-    document.getElementById("set1MinBtn").addEventListener("click", () => changeCooldown(60));
-    document.getElementById("set10MinBtn").addEventListener("click", () => changeCooldown(600));
+    document.getElementById("set30MinBtn").addEventListener("click", () => changeCooldown(1800));
+    document.getElementById("set60MinBtn").addEventListener("click", () => changeCooldown(3600));
+    document.getElementById("set120MinBtn").addEventListener("click", () => changeCooldown(7200));
     // Initial load & recurring refresh
     updateStats().then(() => {
       connectWallet({ silent: true });

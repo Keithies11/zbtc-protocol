@@ -8,6 +8,12 @@ async function main() {
   if (network.name === "baseMainnet" && process.env.CONFIRM_MAINNET_DEPLOY !== "YES") {
     throw new Error("Refusing Base Mainnet deployment: set CONFIRM_MAINNET_DEPLOY=YES only after reviewing the parameters.");
   }
+  if (network.name === "baseMainnet" && process.env.CONFIRM_NEW_TOKEN !== "DEPLOY_NEW_TOKEN_NO_UPGRADE") {
+    throw new Error("Refusing deployment: this creates a separate token, NOT an upgrade or balance migration. After separate approval, set CONFIRM_NEW_TOKEN=DEPLOY_NEW_TOKEN_NO_UPGRADE.");
+  }
+  if (network.name === "baseMainnet" && !process.env.FOUNDER_WALLET_ADDRESS) {
+    throw new Error("Mainnet deployment requires an explicit FOUNDER_WALLET_ADDRESS; refusing the default founder.");
+  }
 
   const [deployer] = await ethers.getSigners();
   if (!deployer) {
@@ -75,7 +81,10 @@ async function main() {
   console.log("==================================================");
 }
 
-main().catch((error) => {
-  console.error("❌ Pre-deployment error:", error.message || error);
-  process.exitCode = 1;
-});
+module.exports = { main };
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("❌ Pre-deployment error:", error.message || error);
+    process.exitCode = 1;
+  });
+}

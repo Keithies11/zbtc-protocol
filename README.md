@@ -44,6 +44,13 @@ The epoch-64 reward cutoff leaves a tiny remainder below the supply cap; exactly
 Run `node scripts/mining-emissions.js` to reproduce the exact supply arithmetic
 and idealized timelines for different numbers of active addresses.
 
+Owner controls across the standalone, member and admin miners offer only
+increases to 30, 60 or 120 minutes, with typed confirmation and owner/account/Base
+checks before signing. They do not change live settings automatically or add
+contract-enforced bounds. The deployed owner setter is still unbounded.
+The token is not upgradeable; the current platform changes preserve its address,
+balances and liquidity.
+
 ---
 
 ## 🚀 Execution Commands
@@ -55,8 +62,11 @@ npm test
 # Deploy to Base Sepolia (safe test network)
 npm run deploy:v2
 
-# Mainnet deployment requires explicit network selection and confirmation
-CONFIRM_MAINNET_DEPLOY=YES npm run deploy:v2:mainnet
+# Mainnet deployment creates a NEW token, not an upgrade. Do not run as an update.
+# After separate migration/deployment approval, deployV2.js requires:
+# CONFIRM_MAINNET_DEPLOY=YES
+# CONFIRM_NEW_TOKEN=DEPLOY_NEW_TOKEN_NO_UPGRADE
+# FOUNDER_WALLET_ADDRESS=<explicit approved address>
 
 # Mine interactively via CLI
 npm run mine

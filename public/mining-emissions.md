@@ -18,6 +18,24 @@ are made by this document or calculator. Always check the deployed cooldown.
 - A change affects all addresses, using their last successful claim timestamp;
   it is not a separate timer reserved only for newly joining miners.
 
+## Owner safety controls
+
+The standalone, member and admin miners offer **review-only** presets of 30, 60
+and 120 minutes, and refuse decreases or no-op changes. No preset is selected
+automatically at a halving. The old 30-second and 1-minute shortcuts are removed.
+Each update reads the current cooldown, requires typing `SET <seconds>`,
+rechecks owner/account/Base Mainnet and cooldown, then requests a wallet signature.
+Cancellation sends no transaction. Live state remains authoritative, and can
+change after the review; always inspect the transaction before signing.
+
+These are frontend safeguards, not new contract restrictions. The deployed
+owner setter remains unbounded: zero permits repeated claims and extreme values
+can make existing address cooldown calculations overflow and revert. These UI
+controls deliberately do not offer those settings. The token is not upgradeable, and local source
+edits cannot change deployed rules, balances, approvals or liquidity. A separate
+deployment would create a new token, not upgrade this one; no deployment,
+migration or live cooldown change is authorized by these platform updates.
+
 ## Fixed-cooldown comparison at the initial 50-ZBTC reward
 
 | Cooldown | Claims/day/address | ZBTC/day/address | Years for 200,000 claims with one address |
