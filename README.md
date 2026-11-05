@@ -32,6 +32,18 @@ On-chain parameters and supply are not a security audit, a guarantee of source v
 
 The ZBTC/USDC pool currently has very low liquidity (most recently observed TVL was approximately $16.40). The dashboard labels the spot price as indicative and warns that trades may have extreme price impact or may not execute at that price. Recheck live pool reserves before any transaction; no market value or exit liquidity is guaranteed.
 
+### Mining emissions and proposed cooldowns
+
+See [the emissions calculations and trade-offs](public/mining-emissions.md).
+The proposed schedule is 10 minutes for epoch 0, then 30, 60, 120, 240 minutes,
+doubling at each later halving. It is **not automatically enforced** by the
+current deployment: each global cooldown change requires an owner transaction.
+Multiple addresses can farm independently, so there is no fixed halving date.
+The epoch-64 reward cutoff leaves a tiny remainder below the supply cap; exactly
+21 million is never minted under the existing rules. No contract change is made.
+Run `node scripts/mining-emissions.js` to reproduce the exact supply arithmetic
+and idealized timelines for different numbers of active addresses.
+
 ---
 
 ## 🚀 Execution Commands
