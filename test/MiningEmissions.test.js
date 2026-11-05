@@ -36,11 +36,17 @@ describe("Mining emissions proposal (read-only)", function () {
     expect(last.elapsedMinutes).to.equal(200_000n * (10n + 30n * (2n ** 63n - 1n)));
   });
 
-  it("discloses multi-address farming and proposal-only scheduling before mining", function () {
+  it("keeps mining near the top with visible safety warnings and accessible rule details", function () {
     const html = fs.readFileSync(path.join(__dirname, "../public/index.html"), "utf8");
     expect(html).to.include("Automated multi-address farming");
     expect(html).to.include("not automatically enforced");
     expect(html).to.include("0.0000000000058");
     expect(html.indexOf("Automated multi-address farming")).to.be.lessThan(html.indexOf('id="mineBtn"'));
+    expect(html.indexOf('class="card mining-card"')).to.be.lessThan(html.indexOf('aria-label="ZBTC liquidity status"'));
+    expect(html.indexOf("Mining costs real Base ETH")).to.be.lessThan(html.indexOf('id="mineBtn"'));
+    expect(html).to.include("<summary>Mining rules, emissions and value disclosures</summary>");
+    for (const id of ["mineBtn", "minePill", "cooldownMsg", "statusMsg", "gasEstimate", "progressFill"]) {
+      expect(html.match(new RegExp(`id="${id}"`, "g"))).to.have.length(1);
+    }
   });
 });

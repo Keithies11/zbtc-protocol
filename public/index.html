@@ -452,6 +452,43 @@
       <span>Connect only a new wallet you control. Never enter a seed phrase or private key here. Do not use old or compromised wallets, and never send funds to a wallet you no longer control. Disconnecting only removes this site’s connection; it cannot reverse blockchain transactions.</span>
     </aside>
 
+    <div class="card mining-card">
+      <h2>Claim ZBTC on Base</h2>
+      <p style="color: var(--text-dim); max-width: 650px;">Submit a wallet transaction to claim newly minted ZBTC. This is not proof-of-work mining or a BTC price peg.</p>
+      <p style="color: #f87171; max-width: 650px; font-size: 0.86rem; font-weight: 700;">⚠️ Experimental learning app. Mining costs real Base ETH; ZBTC has no guaranteed cash value. Use only a wallet you control and funds you can afford to lose.</p>
+      <p style="color: var(--text-dim); max-width: 650px; font-size: 0.86rem;"><strong style="color: #fbbf24;">Automated multi-address farming:</strong> cooldowns apply per address, not per person. Longer cooldowns do not stop farming or guarantee earnings or buyers.</p>
+
+      <div class="reward-pill" id="minePill">
+        Checking current on-chain reward...
+      </div>
+      <button id="mineBtn" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.15rem;" disabled>
+        ⛏️ Mine ZBTC Block
+      </button>
+      <div id="cooldownMsg" class="cooldown-text">Connect Wallet to Mine</div>
+      <div id="statusMsg" class="status-msg"></div>
+      <div id="gasEstimate" style="color: var(--text-dim); font-size: 0.85rem;">Gas estimate unavailable until a wallet is connected.</div>
+
+      <details style="color: var(--text-dim); max-width: 650px; font-size: 0.86rem; text-align: left; line-height: 1.6;">
+        <summary>Mining rules, emissions and value disclosures</summary>
+        <p>Rewards halve every 200,000 global claims, not on a fixed date. The 21,000,000-token cap is a maximum, not a promise that every token will be minted.</p>
+        <p><strong>Value disclosure:</strong> ZBTC is real on-chain token data with a reported Base liquidity position. Liquidity and market price can change. Your wallet balance is not a dollar valuation.</p>
+        <p><strong>Proposed schedule, not automatically enforced:</strong> epoch 0: 10 minutes; epoch 1: 30 minutes; epoch 2: 60 minutes; then 120, 240, 480 minutes, doubling at each halving. The deployed contract uses one owner-adjustable cooldown for all addresses. Each change requires an owner transaction; the live cooldown is authoritative.</p>
+        <p>With one continuously claiming address, the proposal takes about 3.80 years to the first halving and 15.21 years cumulatively through the second epoch. More addresses can reach these milestones faster. These are illustrations, not launch dates or forecasts.</p>
+        <p>The current contract stops rewards at epoch 64. Integer rounding leaves 0.0000000000058 ZBTC below the cap after all positive-reward epochs; exactly 21 million is never reached under these rules.</p>
+        <a href="/mining-emissions.md" style="color: #f7931a;">Read the emissions calculations and trade-offs</a>
+      </details>
+      <div style="width: 100%; margin-top: 1rem;">
+        <div class="info-row">
+          <span id="statMaxCap">Max Cap: Loading...</span>
+          <span id="statProgressPct">Loading...</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="progressFill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+      <p style="color: var(--text-dim); font-size: 0.78rem;">Network: Base Mainnet (Chain ID 8453) · Contract: <span style="font-family: monospace;">0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2</span></p>
+    </div>
+
     <section class="liquidity-panel" aria-label="ZBTC liquidity status">
       <div class="liquidity-header">
         <p style="color: var(--accent); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Mining -&gt; Liquidity</p>
@@ -512,49 +549,6 @@
         · <a href="https://basescan.org/address/0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2#code" target="_blank" rel="noopener noreferrer">Inspect published source ↗</a>
       </div>
     </section>
-
-    <div class="card mining-card">
-      <p style="color: #f87171; font-weight: 800;">⚠️ EXPERIMENTAL LEARNING APP — Do not mine unless you understand Base transactions and gas risk.</p>
-      <h2>Claim ZBTC on Base</h2>
-      <p style="color: var(--text-dim); max-width: 500px;">
-        Submit a wallet transaction to claim newly minted ZBTC. Rewards halve every 200,000 global claims. The 21,000,000-token cap is a maximum, not a promise that every token will be minted. This is not proof-of-work mining or a BTC price peg.
-      </p>
-      <p style="color: #f87171; max-width: 600px; font-size: 0.86rem;">Learning only. You can lose real Base ETH to gas and ZBTC has no guaranteed value. Never use a wallet containing funds you cannot afford to lose.</p>
-      <p style="color: #fbbf24; max-width: 650px; font-size: 0.86rem; font-weight: 700; border: 1px solid rgba(247, 147, 26, 0.5); padding: 0.8rem; border-radius: 8px;">Value disclosure: ZBTC is real on-chain token data with a reported Base liquidity position. Liquidity and market price can change, and there is no guaranteed cash value. Your wallet balance is not a dollar valuation.</p>
-      <div role="note" style="color: var(--text-dim); max-width: 650px; font-size: 0.86rem; text-align: left; line-height: 1.6;">
-        <p><strong style="color: #fbbf24;">Automated multi-address farming:</strong> the cooldown is per address, not per person. One operator can claim through several addresses and sell rewards. A longer cooldown slows each address but does not prevent this or guarantee earnings or buyers.</p>
-        <p><strong>Proposed schedule, not automatically enforced:</strong> epoch 0: 10 minutes; epoch 1: 30 minutes; epoch 2: 60 minutes; then 120, 240, 480 minutes, doubling at each halving. The deployed contract uses one owner-adjustable cooldown for all addresses. Each change requires an owner transaction; the live value above is authoritative.</p>
-        <p>Halving is claim-count based, not date based. With one continuously claiming address, the proposal takes about 3.80 years to the first halving and 15.21 years cumulatively through the second epoch. More addresses can reach these milestones faster. These are illustrations, not launch dates or forecasts.</p>
-        <p>The current contract stops rewards at epoch 64. Integer rounding leaves 0.0000000000058 ZBTC below the cap after all positive-reward epochs; exactly 21 million is never reached under these rules.</p>
-        <a href="/mining-emissions.md" style="color: #f7931a;">Read the emissions calculations and trade-offs</a>
-      </div>
-
-      <div class="reward-pill" id="minePill">
-        Checking current on-chain reward...
-      </div>
-
-      <button id="mineBtn" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.15rem;" disabled>
-        ⛏️ Mine ZBTC Block
-      </button>
-
-      <div id="cooldownMsg" class="cooldown-text">
-        Connect Wallet to Mine
-      </div>
-
-      <div id="statusMsg" class="status-msg"></div>
-      <div id="gasEstimate" style="color: var(--text-dim); font-size: 0.85rem;">Gas estimate unavailable until a wallet is connected.</div>
-
-      <div style="width: 100%; margin-top: 1rem;">
-        <div class="info-row">
-          <span id="statMaxCap">Max Cap: Loading...</span>
-          <span id="statProgressPct">Loading...</span>
-        </div>
-        <div class="progress-bar-container">
-          <div id="progressFill" class="progress-bar-fill"></div>
-        </div>
-      </div>
-      <p style="color: var(--text-dim); font-size: 0.78rem;">Network: Base Mainnet (Chain ID 8453) · Contract: <span style="font-family: monospace;">0x034b2F529dc9B647DA2c7BCb016064e74e32d7C2</span></p>
-    </div>
 
     <div class="grid-stats">
       <div class="card">
